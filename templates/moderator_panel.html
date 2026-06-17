@@ -1,0 +1,1257 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Панель модератора — ProjRequest</title>
+
+    <!-- Content Security Policy -->
+    <meta http-equiv="Content-Security-Policy" content="
+        default-src 'self';
+        script-src 'self' 'unsafe-inline';
+        style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+        font-src https://fonts.gstatic.com;
+        img-src 'self' data:;
+        connect-src 'self';
+    ">
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Inria+Sans:wght@400;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* ===== Базовые стили ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', 'Inria Sans', sans-serif;
+            background: #f5f7fa;
+            color: #1F2937;
+            min-height: 100vh;
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        /* ===== Навигация ===== */
+        .navbar {
+            display: flex;
+            align-items: center;
+            padding: 10px 80px;
+            background: white;
+            border-bottom: 1px solid #E5E7EB;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo-link {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            object-fit: contain;
+        }
+
+        .logo-text {
+            font-family: 'Inria Sans', sans-serif;
+            font-size: 28px;
+            color: #1F2937;
+        }
+
+        .logo-text .pipe {
+            color: #007ED2;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 5px;
+            margin-left: auto;
+            align-items: center;
+        }
+
+        .nav-link {
+            font-family: 'Inria Sans', sans-serif;
+            font-size: 16px;
+            color: #1F2937;
+            padding: 8px 16px;
+            border-radius: 4px;
+            transition: background 0.3s ease;
+            cursor: pointer;
+            background: none;
+            border: none;
+        }
+
+        .nav-link:hover {
+            background: rgba(0,126,210,0.08);
+        }
+
+        .nav-link.active {
+            color: #007ED2;
+            font-weight: 700;
+        }
+
+        .nav-link.logout {
+            color: #DC2626;
+        }
+
+        .nav-link.logout:hover {
+            background: rgba(220,38,38,0.08);
+        }
+
+        /* ===== Контейнер ===== */
+        .container {
+            max-width: 1320px;
+            margin: 0 auto;
+            padding: 32px 80px 60px 80px;
+        }
+
+        /* ===== Заголовок ===== */
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+
+        .page-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: #1F2937;
+        }
+
+        .page-title span {
+            color: #007ED2;
+        }
+
+        .header-stats {
+            display: flex;
+            gap: 24px;
+            flex-wrap: wrap;
+        }
+
+        .stat-item {
+            background: white;
+            padding: 8px 20px;
+            border-radius: 8px;
+            border: 1px solid #E5E7EB;
+            text-align: center;
+        }
+
+        .stat-item .number {
+            font-size: 20px;
+            font-weight: 700;
+            color: #007ED2;
+        }
+
+        .stat-item .label {
+            font-size: 12px;
+            color: #757575;
+            display: block;
+        }
+
+        /* ===== Фильтры ===== */
+        .filter-panel {
+            display: flex;
+            gap: 16px;
+            align-items: flex-end;
+            flex-wrap: wrap;
+            padding: 20px 24px;
+            background: white;
+            border-radius: 12px;
+            border: 1px solid #E5E7EB;
+            margin-bottom: 24px;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .filter-group label {
+            font-size: 13px;
+            font-weight: 500;
+            color: #6C757D;
+        }
+
+        .filter-group select,
+        .filter-group input {
+            padding: 10px 16px;
+            border: 1px solid #E5E7EB;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: 'Inter', sans-serif;
+            outline: none;
+            transition: border-color 0.3s ease;
+            background: white;
+            min-width: 160px;
+        }
+
+        .filter-group select:focus,
+        .filter-group input:focus {
+            border-color: #007ED2;
+            box-shadow: 0 0 0 3px rgba(0,126,210,0.1);
+        }
+
+        .btn {
+            padding: 10px 24px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            font-size: 14px;
+            font-family: 'Inter', sans-serif;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: #007ED2;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #005a99;
+            box-shadow: 0 4px 12px rgba(0,126,210,0.3);
+        }
+
+        .btn-secondary {
+            background: #E5E7EB;
+            color: #1F2937;
+        }
+
+        .btn-secondary:hover {
+            background: #d1d5db;
+        }
+
+        .btn-success {
+            background: #059669;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #047857;
+        }
+
+        .btn-danger {
+            background: #DC2626;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #B91C1C;
+        }
+
+        .btn-warning {
+            background: #FEF3C7;
+            color: #D97706;
+        }
+
+        .btn-warning:hover {
+            background: #FDE68A;
+        }
+
+        .btn-sm {
+            padding: 6px 16px;
+            font-size: 12px;
+        }
+
+        /* ===== Таблица ===== */
+        .table-wrapper {
+            background: white;
+            border-radius: 12px;
+            border: 1px solid #E5E7EB;
+            overflow: hidden;
+        }
+
+        .table-scroll {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: #F9FAFB;
+        }
+
+        th {
+            text-align: left;
+            padding: 14px 20px;
+            font-weight: 600;
+            font-size: 13px;
+            color: #6C757D;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            border-bottom: 1px solid #E5E7EB;
+            white-space: nowrap;
+        }
+
+        td {
+            padding: 14px 20px;
+            border-bottom: 1px solid #F3F4F6;
+            font-size: 14px;
+            vertical-align: middle;
+        }
+
+        tr:hover {
+            background: #F9FAFB;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* Бейджи статусов */
+        .badge {
+            display: inline-block;
+            padding: 4px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .badge-pending {
+            background: #FEF3C7;
+            color: #D97706;
+        }
+
+        .badge-approved {
+            background: #D1FAE5;
+            color: #059669;
+        }
+
+        .badge-rejected {
+            background: #FEE2E2;
+            color: #DC2626;
+        }
+
+        .badge-revision {
+            background: #E0F2FE;
+            color: #0369A1;
+        }
+
+        .badge-completed {
+            background: #EDE9FE;
+            color: #6D28D9;
+        }
+
+        .badge-draft {
+            background: #F3F4F6;
+            color: #6B7280;
+        }
+
+        .app-link {
+            color: #007ED2;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        .app-link:hover {
+            text-decoration: underline;
+        }
+
+        .actions-cell {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .actions-cell .btn {
+            padding: 4px 12px;
+            font-size: 11px;
+        }
+
+        /* ===== Загрузка ===== */
+        .loading-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6C757D;
+        }
+
+        .loading-state .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #E5E7EB;
+            border-top-color: #007ED2;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 16px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6C757D;
+        }
+
+        .no-data .icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        /* ===== Пагинация ===== */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            padding: 20px 0;
+        }
+
+        .pagination button {
+            padding: 8px 16px;
+            border: 1px solid #E5E7EB;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .pagination button:hover:not(:disabled) {
+            background: #F9FAFB;
+            border-color: #007ED2;
+        }
+
+        .pagination button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .pagination button.active {
+            background: #007ED2;
+            color: white;
+            border-color: #007ED2;
+        }
+
+        /* ================================================================ */
+        /* МОДАЛЬНОЕ ОКНО ДЛЯ ПРОСМОТРА ЗАЯВКИ                              */
+        /* ================================================================ */
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(4px);
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: white;
+            border-radius: 16px;
+            width: 100%;
+            max-width: 720px;
+            max-height: 90vh;
+            padding: 40px;
+            position: relative;
+            overflow-y: auto;
+            animation: modalSlideUp 0.3s ease;
+        }
+
+        @keyframes modalSlideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 16px;
+            right: 20px;
+            width: 36px;
+            height: 36px;
+            border: none;
+            background: #F3F4F6;
+            border-radius: 50%;
+            font-size: 22px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #6B7280;
+            transition: all 0.3s ease;
+        }
+
+        .modal-close:hover {
+            background: #E5E7EB;
+            color: #1F2937;
+        }
+
+        .modal-title {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            padding-right: 40px;
+        }
+
+        .modal-meta {
+            font-size: 14px;
+            color: #6C757D;
+            margin-bottom: 20px;
+        }
+
+        .modal-section {
+            margin-bottom: 20px;
+        }
+
+        .modal-section h4 {
+            font-size: 14px;
+            font-weight: 600;
+            color: #6C757D;
+            margin-bottom: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .modal-section .value {
+            font-size: 16px;
+            color: #1F2937;
+            padding: 12px 16px;
+            background: #F9FAFB;
+            border-radius: 8px;
+            word-wrap: break-word;
+        }
+
+        .modal-section .value.danger {
+            background: #FEF2F2;
+            color: #DC2626;
+        }
+
+        .modal-divider {
+            border: none;
+            border-top: 1px solid #E5E7EB;
+            margin: 20px 0;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+
+        .modal-actions .btn {
+            flex: 1;
+            min-width: 120px;
+            text-align: center;
+        }
+
+        /* ===== Футер ===== */
+        .footer {
+            border-top: 1px solid #DEE2E6;
+            padding: 24px 20px;
+            max-width: 1320px;
+            margin: 0 auto;
+            text-align: center;
+            font-size: 14px;
+            color: #6C757D;
+        }
+
+        /* ===== Адаптив ===== */
+        @media (max-width: 1024px) {
+            .navbar {
+                padding: 10px 20px;
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+
+            .nav-links {
+                margin-left: 0;
+                width: 100%;
+                justify-content: center;
+                flex-wrap: wrap;
+            }
+
+            .container {
+                padding: 20px;
+            }
+
+            .page-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .filter-panel {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .filter-group select,
+            .filter-group input {
+                min-width: 100%;
+            }
+
+            .modal {
+                max-width: 95%;
+                padding: 24px;
+                margin: 10px;
+            }
+
+            .actions-cell {
+                flex-direction: column;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .header-stats {
+                width: 100%;
+                gap: 8px;
+            }
+
+            .stat-item {
+                flex: 1;
+                padding: 6px 12px;
+            }
+
+            .stat-item .number {
+                font-size: 16px;
+            }
+
+            td, th {
+                padding: 10px 12px;
+                font-size: 13px;
+            }
+
+            .modal-actions .btn {
+                min-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ===== Навигация ===== -->
+    <nav class="navbar">
+        <a href="../index.html" class="logo-link">
+            <img src="../assets/images/logo-icon.png" alt="Logo" class="logo-icon">
+            <span class="logo-text">Proj<span class="pipe">|</span>Request</span>
+        </a>
+        <div class="nav-links">
+            <a href="../index.html#about" class="nav-link">О сервисе</a>
+            <a href="../index.html#how-it-works" class="nav-link">Как это работает</a>
+            <a href="#" class="nav-link active">Панель модератора</a>
+            <button class="nav-link logout" onclick="logout()">Выйти</button>
+        </div>
+    </nav>
+
+    <!-- ===== Контент ===== -->
+    <div class="container">
+
+        <!-- Заголовок -->
+        <div class="page-header">
+            <h1 class="page-title">📋 Панель <span>модератора</span></h1>
+            <div class="header-stats" id="statsContainer">
+                <div class="stat-item">
+                    <span class="number" id="statTotal">0</span>
+                    <span class="label">Всего заявок</span>
+                </div>
+                <div class="stat-item">
+                    <span class="number" id="statPending">0</span>
+                    <span class="label">На модерации</span>
+                </div>
+                <div class="stat-item">
+                    <span class="number" id="statApproved">0</span>
+                    <span class="label">Принято</span>
+                </div>
+                <div class="stat-item">
+                    <span class="number" id="statRevision">0</span>
+                    <span class="label">На доработке</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Фильтры -->
+        <div class="filter-panel">
+            <div class="filter-group">
+                <label for="filterStatus">Статус</label>
+                <select id="filterStatus" onchange="loadApplications()">
+                    <option value="">Все статусы</option>
+                    <option value="pending">⏳ На модерации</option>
+                    <option value="approved">✅ Принята в работу</option>
+                    <option value="revision">⚠️ Требует уточнения</option>
+                    <option value="completed">✓ Завершена</option>
+                    <option value="rejected">✖ Отклонена</option>
+                    <option value="draft">📄 Черновик</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="filterSearch">Поиск</label>
+                <input type="text" id="filterSearch" placeholder="🔍 Название или заказчик..." oninput="debouncedLoad()">
+            </div>
+            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                <button class="btn btn-primary" onclick="loadApplications()">Применить</button>
+                <button class="btn btn-secondary" onclick="resetFilters()">Сбросить</button>
+                <button class="btn btn-secondary" onclick="loadApplications()">🔄 Обновить</button>
+            </div>
+        </div>
+
+        <!-- Таблица -->
+        <div class="table-wrapper">
+            <div class="table-scroll">
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width: 60px;">ID</th>
+                            <th>Проект</th>
+                            <th>Заказчик</th>
+                            <th>Организация</th>
+                            <th style="width: 100px;">Бюджет</th>
+                            <th style="width: 130px;">Статус</th>
+                            <th style="width: 150px;">Дата</th>
+                            <th style="width: 180px;">Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody id="applicationsBody">
+                        <tr>
+                            <td colspan="8">
+                                <div class="loading-state">
+                                    <div class="spinner"></div>
+                                    <p>Загрузка заявок...</p>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Пагинация -->
+        <div class="pagination" id="pagination">
+            <button onclick="changePage(-1)" id="prevPage" disabled>← Предыдущая</button>
+            <span id="pageInfo" style="display: flex; align-items: center; padding: 0 16px; font-size: 14px; color: #6C757D;">Страница 1</span>
+            <button onclick="changePage(1)" id="nextPage">Следующая →</button>
+        </div>
+    </div>
+
+    <!-- ================================================================ -->
+    <!-- МОДАЛЬНОЕ ОКНО: Детали заявки                                     -->
+    <!-- ================================================================ -->
+    <div class="modal-overlay" id="applicationModal">
+        <div class="modal">
+            <button class="modal-close" onclick="closeModal()">&times;</button>
+            <h2 class="modal-title" id="modalTitle">Загрузка...</h2>
+            <div class="modal-meta" id="modalMeta">Заявка № PR-2025-XXX</div>
+
+            <div id="modalContent">
+                <!-- Заполняется динамически -->
+            </div>
+
+            <hr class="modal-divider">
+
+            <div class="modal-actions" id="modalActions">
+                <!-- Кнопки действий -->
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== Футер ===== -->
+    <footer class="footer">
+        <p>© 2026 Новгородский государственный университет. Все права защищены.</p>
+    </footer>
+
+    <!-- ================================================================ -->
+    <!-- JavaScript                                                        -->
+    <!-- ================================================================ -->
+    <script>
+        // ================================================================
+        // БЕЗОПАСНОСТЬ
+        // ================================================================
+
+        /**
+         * Экранирование HTML для защиты от XSS
+         */
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        /**
+         * Безопасный вывод в HTML
+         */
+        function safe(text) {
+            return escapeHtml(String(text));
+        }
+
+        // ================================================================
+        // СОСТОЯНИЕ
+        // ================================================================
+
+        let applications = [];
+        let currentPage = 1;
+        let totalPages = 1;
+        const perPage = 10;
+        let searchTimeout = null;
+
+        // ================================================================
+        // ЗАГРУЗКА ЗАЯВОК
+        // ================================================================
+
+        async function loadApplications(page = 1) {
+            const status = document.getElementById('filterStatus').value;
+            const search = document.getElementById('filterSearch').value.trim();
+
+            const tbody = document.getElementById('applicationsBody');
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="8">
+                        <div class="loading-state">
+                            <div class="spinner"></div>
+                            <p>Загрузка...</p>
+                        </div>
+                    </td>
+                </tr>
+            `;
+
+            try {
+                const params = new URLSearchParams({
+                    page: page,
+                    limit: perPage,
+                    status: status,
+                    search: search
+                });
+
+                const response = await fetch(`../api/moderator_applications.php?${params}`);
+
+                if (response.status === 403) {
+                    // Не авторизован
+                    window.location.href = '../index.html';
+                    return;
+                }
+
+                if (!response.ok) {
+                    throw new Error(`Ошибка ${response.status}`);
+                }
+
+                const data = await response.json();
+
+                if (!data.success) {
+                    throw new Error(data.message || 'Ошибка загрузки');
+                }
+
+                applications = data.applications || [];
+                totalPages = data.total_pages || 1;
+                currentPage = data.current_page || 1;
+
+                renderApplications();
+                renderPagination();
+                updateStats(data.stats || {});
+
+            } catch (error) {
+                console.error('Ошибка загрузки:', error);
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="8">
+                            <div class="no-data">
+                                <div class="icon">⚠️</div>
+                                <p>Ошибка загрузки данных. Пожалуйста, обновите страницу.</p>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+
+        function renderApplications() {
+            const tbody = document.getElementById('applicationsBody');
+
+            if (applications.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="8">
+                            <div class="no-data">
+                                <div class="icon">📋</div>
+                                <p>Заявок не найдено</p>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            let html = '';
+            for (const app of applications) {
+                html += renderApplicationRow(app);
+            }
+            tbody.innerHTML = html;
+        }
+
+        function renderApplicationRow(app) {
+            const statusMap = {
+                'pending': { label: '⏳ На модерации', class: 'badge-pending' },
+                'approved': { label: '✅ Принята в работу', class: 'badge-approved' },
+                'revision': { label: '⚠️ Требует уточнения', class: 'badge-revision' },
+                'completed': { label: '✓ Завершена', class: 'badge-completed' },
+                'rejected': { label: '✖ Отклонена', class: 'badge-rejected' },
+                'draft': { label: '📄 Черновик', class: 'badge-draft' },
+            };
+
+            const status = statusMap[app.status] || { label: app.status, class: '' };
+            const createdDate = app.created_at ? new Date(app.created_at).toLocaleDateString('ru-RU', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric'
+            }) : '—';
+
+            const budget = app.budget ? Number(app.budget).toLocaleString('ru-RU') + ' ₽' : '—';
+
+            // Определяем доступные действия
+            let actionsHtml = '';
+            if (app.status === 'pending') {
+                actionsHtml = `
+                    <button class="btn btn-sm btn-success" onclick="openModal(${app.id})">✅ Одобрить</button>
+                    <button class="btn btn-sm btn-warning" onclick="openModal(${app.id})">✏️ Доработка</button>
+                    <button class="btn btn-sm btn-danger" onclick="openModal(${app.id})">✖ Отклонить</button>
+                `;
+            } else if (app.status === 'revision') {
+                actionsHtml = `
+                    <button class="btn btn-sm btn-success" onclick="openModal(${app.id})">✅ Одобрить</button>
+                    <button class="btn btn-sm btn-danger" onclick="openModal(${app.id})">✖ Отклонить</button>
+                `;
+            } else {
+                actionsHtml = `
+                    <button class="btn btn-sm btn-secondary" onclick="openModal(${app.id})">👁️ Просмотр</button>
+                `;
+            }
+
+            return `
+                <tr>
+                    <td><strong>#${safe(app.id)}</strong></td>
+                    <td>
+                        <a class="app-link" onclick="openModal(${app.id})">${safe(app.project_name)}</a>
+                    </td>
+                    <td>${safe(app.client_name)}</td>
+                    <td>${safe(app.organization || '—')}</td>
+                    <td>${budget}</td>
+                    <td><span class="badge ${status.class}">${status.label}</span></td>
+                    <td>${createdDate}</td>
+                    <td>
+                        <div class="actions-cell">
+                            ${actionsHtml}
+                        </div>
+                    </td>
+                </tr>
+            `;
+        }
+
+        // ================================================================
+        // СТАТИСТИКА
+        // ================================================================
+
+        function updateStats(stats) {
+            document.getElementById('statTotal').textContent = stats.total || 0;
+            document.getElementById('statPending').textContent = stats.pending || 0;
+            document.getElementById('statApproved').textContent = stats.approved || 0;
+            document.getElementById('statRevision').textContent = stats.revision || 0;
+        }
+
+        // ================================================================
+        // ПАГИНАЦИЯ
+        // ================================================================
+
+        function renderPagination() {
+            document.getElementById('pageInfo').textContent = `Страница ${currentPage} из ${totalPages}`;
+            document.getElementById('prevPage').disabled = currentPage <= 1;
+            document.getElementById('nextPage').disabled = currentPage >= totalPages;
+        }
+
+        function changePage(delta) {
+            const newPage = currentPage + delta;
+            if (newPage >= 1 && newPage <= totalPages) {
+                loadApplications(newPage);
+            }
+        }
+
+        // ================================================================
+        // ФИЛЬТРЫ
+        // ================================================================
+
+        function resetFilters() {
+            document.getElementById('filterStatus').value = '';
+            document.getElementById('filterSearch').value = '';
+            loadApplications(1);
+        }
+
+        function debouncedLoad() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => loadApplications(1), 400);
+        }
+
+        // ================================================================
+        // МОДАЛЬНОЕ ОКНО
+        // ================================================================
+
+        let currentApplicationId = null;
+
+        async function openModal(id) {
+            currentApplicationId = id;
+            const modal = document.getElementById('applicationModal');
+
+            // Показываем загрузку
+            document.getElementById('modalTitle').textContent = 'Загрузка...';
+            document.getElementById('modalMeta').textContent = 'Пожалуйста, подождите';
+            document.getElementById('modalContent').innerHTML = `
+                <div class="loading-state">
+                    <div class="spinner"></div>
+                    <p>Загрузка данных заявки...</p>
+                </div>
+            `;
+            document.getElementById('modalActions').innerHTML = '';
+
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+
+            try {
+                const response = await fetch(`../api/application_details.php?id=${id}`);
+                if (!response.ok) throw new Error('Ошибка загрузки');
+
+                const data = await response.json();
+                if (!data.success) throw new Error(data.message || 'Ошибка');
+
+                renderModalContent(data.application);
+
+            } catch (error) {
+                console.error('Ошибка:', error);
+                document.getElementById('modalContent').innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: #DC2626;">
+                        ⚠️ Ошибка загрузки данных заявки
+                    </div>
+                `;
+            }
+        }
+
+        function renderModalContent(app) {
+            document.getElementById('modalTitle').textContent = safe(app.project_name);
+            document.getElementById('modalMeta').textContent = `Заявка № PR-${String(app.id).padStart(4, '0')} • Создана: ${new Date(app.created_at).toLocaleDateString('ru-RU')}`;
+
+            const statusMap = {
+                'pending': { label: '⏳ На модерации', class: 'badge-pending' },
+                'approved': { label: '✅ Принята в работу', class: 'badge-approved' },
+                'revision': { label: '⚠️ Требует уточнения', class: 'badge-revision' },
+                'completed': { label: '✓ Завершена', class: 'badge-completed' },
+                'rejected': { label: '✖ Отклонена', class: 'badge-rejected' },
+                'draft': { label: '📄 Черновик', class: 'badge-draft' },
+            };
+
+            const status = statusMap[app.status] || { label: app.status, class: '' };
+
+            let html = `
+                <div class="modal-section">
+                    <h4>Статус</h4>
+                    <div class="value"><span class="badge ${status.class}">${status.label}</span></div>
+                </div>
+
+                <div class="modal-section">
+                    <h4>Заказчик</h4>
+                    <div class="value">${safe(app.client_name)} (${safe(app.organization || 'Не указана')})</div>
+                </div>
+
+                <div class="modal-section">
+                    <h4>Бюджет</h4>
+                    <div class="value">${app.budget ? Number(app.budget).toLocaleString('ru-RU') + ' ₽' : 'Не указан'}</div>
+                </div>
+
+                <div class="modal-section">
+                    <h4>Описание</h4>
+                    <div class="value">${safe(app.description || 'Нет описания')}</div>
+                </div>
+            `;
+
+            if (app.tasks) {
+                html += `
+                    <div class="modal-section">
+                        <h4>Задачи</h4>
+                        <div class="value">${safe(app.tasks)}</div>
+                    </div>
+                `;
+            }
+
+            if (app.moderator_comment) {
+                html += `
+                    <div class="modal-section">
+                        <h4>Комментарий модератора</h4>
+                        <div class="value danger">${safe(app.moderator_comment)}</div>
+                    </div>
+                `;
+            }
+
+            document.getElementById('modalContent').innerHTML = html;
+
+            // Кнопки действий
+            let actionsHtml = '';
+
+            if (app.status === 'pending') {
+                actionsHtml = `
+                    <button class="btn btn-success" onclick="changeStatus(${app.id}, 'approved')">✅ Одобрить</button>
+                    <button class="btn btn-warning" onclick="requestRevision(${app.id})">✏️ Отправить на доработку</button>
+                    <button class="btn btn-danger" onclick="changeStatus(${app.id}, 'rejected')">✖ Отклонить</button>
+                `;
+            } else if (app.status === 'revision') {
+                actionsHtml = `
+                    <button class="btn btn-success" onclick="changeStatus(${app.id}, 'approved')">✅ Одобрить</button>
+                    <button class="btn btn-danger" onclick="changeStatus(${app.id}, 'rejected')">✖ Отклонить</button>
+                `;
+            }
+
+            actionsHtml += `
+                <button class="btn btn-secondary" onclick="closeModal()">Закрыть</button>
+            `;
+
+            document.getElementById('modalActions').innerHTML = actionsHtml;
+        }
+
+        function closeModal() {
+            document.getElementById('applicationModal').classList.remove('active');
+            document.body.style.overflow = '';
+            currentApplicationId = null;
+        }
+
+        // Закрытие по клику на оверлей
+        document.getElementById('applicationModal').addEventListener('click', function(e) {
+            if (e.target === this) closeModal();
+        });
+
+        // Закрытие по ESC
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') closeModal();
+        });
+
+        // ================================================================
+        // ДЕЙСТВИЯ С ЗАЯВКАМИ
+        // ================================================================
+
+        async function changeStatus(id, status) {
+            const confirmMessages = {
+                'approved': 'Подтвердите одобрение заявки',
+                'rejected': 'Подтвердите отклонение заявки'
+            };
+
+            if (!confirm(confirmMessages[status] || 'Подтвердите действие')) return;
+
+            try {
+                const formData = new FormData();
+                formData.append('id', id);
+                formData.append('status', status);
+                formData.append('comment', '');
+
+                const response = await fetch('../api/change_status.php', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    alert('Статус успешно изменён!');
+                    closeModal();
+                    loadApplications(currentPage);
+                } else {
+                    alert('Ошибка: ' + result.message);
+                }
+            } catch (error) {
+                console.error('Ошибка:', error);
+                alert('Произошла ошибка при изменении статуса');
+            }
+        }
+
+        function requestRevision(id) {
+            const comment = prompt('Введите комментарий для заказчика (причина отправки на доработку):');
+            if (comment === null) return;
+
+            if (comment.trim() === '') {
+                alert('Пожалуйста, укажите причину доработки');
+                return;
+            }
+
+            try {
+                const formData = new FormData();
+                formData.append('id', id);
+                formData.append('status', 'revision');
+                formData.append('comment', comment.trim());
+
+                fetch('../api/change_status.php', {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(r => r.json())
+                    .then(result => {
+                        if (result.success) {
+                            alert('Заявка отправлена на доработку!');
+                            closeModal();
+                            loadApplications(currentPage);
+                        } else {
+                            alert('Ошибка: ' + result.message);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Ошибка:', error);
+                        alert('Произошла ошибка при отправке');
+                    });
+            } catch (error) {
+                console.error('Ошибка:', error);
+                alert('Произошла ошибка');
+            }
+        }
+
+        // ================================================================
+        // ВЫХОД
+        // ================================================================
+
+        async function logout() {
+            if (!confirm('Вы уверены, что хотите выйти?')) return;
+
+            try {
+                const response = await fetch('../api/logout.php');
+                const result = await response.json();
+                if (result.success) {
+                    window.location.href = '../index.html';
+                }
+            } catch (error) {
+                console.error('Ошибка выхода:', error);
+                window.location.href = '../index.html';
+            }
+        }
+
+        // ================================================================
+        // ИНИЦИАЛИЗАЦИЯ
+        // ================================================================
+
+        document.addEventListener('DOMContentLoaded', function() {
+            loadApplications(1);
+        });
+    </script>
+
+</body>
+</html>

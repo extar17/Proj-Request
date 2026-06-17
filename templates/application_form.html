@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Создание заявки — ProjRequest</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        /* ===== Базовые стили Material Design ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 40px 20px;
+        }
+
+        .form-container {
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+            width: 100%;
+            max-width: 700px;
+            padding: 32px;
+        }
+
+        .form-title {
+            font-size: 24px;
+            font-weight: 500;
+            margin-bottom: 24px;
+            color: #1976d2;
+            text-align: center;
+        }
+
+        /* Индикатор шагов */
+        .step-indicator {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 32px;
+            gap: 8px;
+        }
+
+        .step-dot {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #e0e0e0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 500;
+            color: #999;
+            transition: all 0.3s ease;
+        }
+
+        .step-dot.active {
+            background: #1976d2;
+            color: #fff;
+        }
+
+        .step-dot.completed {
+            background: #4caf50;
+            color: #fff;
+        }
+
+        /* Стили полей ввода */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 6px;
+            color: #555;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+            font-family: inherit;
+            transition: border-color 0.3s ease;
+            outline: none;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            border-color: #1976d2;
+            box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.2);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        .error-message {
+            color: #d32f2f;
+            font-size: 13px;
+            margin-top: 4px;
+            display: none;
+        }
+
+        .error-message.visible {
+            display: block;
+        }
+
+        .input-error {
+            border-color: #d32f2f !important;
+        }
+
+        /* Кнопки */
+        .btn-group {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 32px;
+            gap: 16px;
+        }
+
+        .btn {
+            padding: 12px 32px;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-primary {
+            background: #1976d2;
+            color: #fff;
+        }
+
+        .btn-primary:hover {
+            background: #1565c0;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-secondary {
+            background: #e0e0e0;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: #d5d5d5;
+        }
+
+        .btn-success {
+            background: #4caf50;
+            color: #fff;
+        }
+
+        .btn-success:hover {
+            background: #43a047;
+        }
+
+        /* Шаги */
+        .step {
+            display: none;
+            animation: fadeIn 0.4s ease;
+        }
+
+        .step.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Адаптивность */
+        @media (max-width: 600px) {
+            .form-container {
+                padding: 20px;
+            }
+            .btn-group {
+                flex-direction: column;
+            }
+            .btn {
+                width: 100%;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="form-container">
+        <h1 class="form-title">Создание проектной заявки</h1>
+
+        <!-- Индикатор шагов -->
+        <div class="step-indicator">
+            <div class="step-dot active" id="dot-1">1</div>
+            <div class="step-dot" id="dot-2">2</div>
+            <div class="step-dot" id="dot-3">3</div>
+        </div>
+
+        <form id="applicationForm" enctype="multipart/form-data" novalidate>
+            <!-- Шаг 1: Основная информация -->
+            <div class="step active" id="step-1">
+                <div class="form-group">
+                    <label for="project_name">Название проекта *</label>
+                    <input type="text" id="project_name" name="project_name" maxlength="255" placeholder="Введите название проекта">
+                    <span class="error-message" id="error-project_name"></span>
+                </div>
+
+                <div class="form-group">
+                    <label for="description">Описание проекта *</label>
+                    <textarea id="description" name="description" maxlength="5000" placeholder="Подробно опишите проект, цели и ожидаемые результаты"></textarea>
+                    <span class="error-message" id="error-description"></span>
+                </div>
+
+                <div class="form-group">
+                    <label for="tasks">Задачи проекта</label>
+                    <textarea id="tasks" name="tasks" maxlength="3000" placeholder="Перечислите ключевые задачи"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="required_resources">Требуемые ресурсы</label>
+                    <textarea id="required_resources" name="required_resources" maxlength="2000" placeholder="Оборудование, материалы, помещения и т.д."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="budget">Предполагаемый бюджет (руб.) *</label>
+                    <input type="number" id="budget" name="budget" min="0" step="0.01" placeholder="0.00">
+                    <span class="error-message" id="error-budget"></span>
+                </div>
+
+                <div class="btn-group">
+                    <div></div>
+                    <button type="button" class="btn btn-primary" onclick="nextStep()">Далее</button>
+                </div>
+            </div>
+
+            <!-- Шаг 2: Техническое задание -->
+            <div class="step" id="step-2">
+                <div class="form-group">
+                    <label for="tech_file">Файл технического задания</label>
+                    <input type="file" id="tech_file" name="tech_file" accept=".pdf,.doc,.docx,.zip">
+                    <span class="error-message" id="error-tech_file"></span>
+                    <small style="color: #888;">Допустимые форматы: PDF, DOC, DOCX, ZIP (до 10 МБ)</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="tech_params">Технические параметры (JSON)</label>
+                    <textarea id="tech_params" name="tech_params" rows="5" placeholder='{"оборудование": "...", "технологии": "..."}'></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="additional_req">Дополнительные требования (конфиденциально)</label>
+                    <textarea id="additional_req" name="additional_req" rows="4" placeholder="Конфиденциальные требования к проекту"></textarea>
+                </div>
+
+                <div class="btn-group">
+                    <button type="button" class="btn btn-secondary" onclick="prevStep()">Назад</button>
+                    <button type="button" class="btn btn-primary" onclick="nextStep()">Далее</button>
+                </div>
+            </div>
+
+            <!-- Шаг 3: Подтверждение -->
+            <div class="step" id="step-3">
+                <h3 style="margin-bottom: 16px;">Проверьте введённые данные</h3>
+                <div id="summary" style="background: #f9f9f9; padding: 16px; border-radius: 4px; margin-bottom: 20px;">
+                    <!-- Заполняется динамически через JS -->
+                </div>
+
+                <div class="btn-group">
+                    <button type="button" class="btn btn-secondary" onclick="prevStep()">Назад</button>
+                    <button type="submit" class="btn btn-success">Отправить заявку</button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        // Текущий активный шаг
+        let currentStep = 1;
+        const totalSteps = 3;
+
+        /**
+         * Переключение на указанный шаг
+         * @param {number} step Номер шага
+         */
+        function showStep(step) {
+            // Скрываем все шаги
+            document.querySelectorAll('.step').forEach(el => el.classList.remove('active'));
+            // Показываем нужный
+            document.getElementById('step-' + step).classList.add('active');
+
+            // Обновляем индикатор
+            document.querySelectorAll('.step-dot').forEach(dot => dot.classList.remove('active', 'completed'));
+            for (let i = 1; i <= totalSteps; i++) {
+                const dot = document.getElementById('dot-' + i);
+                if (i < step) dot.classList.add('completed');
+                if (i === step) dot.classList.add('active');
+            }
+
+            currentStep = step;
+
+            // Если перешли на шаг подтверждения — заполняем сводку
+            if (step === 3) {
+                fillSummary();
+            }
+        }
+
+        /**
+         * Переход на следующий шаг с валидацией
+         */
+        function nextStep() {
+            if (currentStep === 1 && !validateStep1()) return;
+            if (currentStep === 2 && !validateStep2()) return;
+            if (currentStep < totalSteps) {
+                showStep(currentStep + 1);
+            }
+        }
+
+        /**
+         * Переход на предыдущий шаг
+         */
+        function prevStep() {
+            if (currentStep > 1) {
+                showStep(currentStep - 1);
+            }
+        }
+
+        /**
+         * Валидация Шага 1
+         * @returns {boolean} Валиден ли шаг
+         */
+        function validateStep1() {
+            let isValid = true;
+            clearErrors();
+
+            const projectName = document.getElementById('project_name').value.trim();
+            const description = document.getElementById('description').value.trim();
+            const budget = document.getElementById('budget').value;
+
+            // Проверка названия
+            if (projectName === '') {
+                showError('project_name', 'Название проекта обязательно');
+                isValid = false;
+            } else if (projectName.length < 5) {
+                showError('project_name', 'Название должно быть не менее 5 символов');
+                isValid = false;
+            }
+
+            // Проверка описания
+            if (description === '') {
+                showError('description', 'Описание проекта обязательно');
+                isValid = false;
+            } else if (description.length < 20) {
+                showError('description', 'Описание должно быть не менее 20 символов');
+                isValid = false;
+            }
+
+            // Проверка бюджета
+            if (budget === '') {
+                showError('budget', 'Укажите предполагаемый бюджет');
+                isValid = false;
+            } else if (parseFloat(budget) < 0) {
+                showError('budget', 'Бюджет не может быть отрицательным');
+                isValid = false;
+            }
+
+            return isValid;
+        }
+
+        /**
+         * Валидация Шага 2
+         * @returns {boolean} Валиден ли шаг
+         */
+        function validateStep2() {
+            let isValid = true;
+            clearErrors();
+
+            const fileInput = document.getElementById('tech_file');
+            if (fileInput.files.length > 0) {
+                const file = fileInput.files[0];
+                const allowedTypes = ['application/pdf', 'application/msword',
+                    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                    'application/zip', 'application/x-zip-compressed'];
+                const maxSize = 10 * 1024 * 1024; // 10 МБ
+
+                if (!allowedTypes.includes(file.type)) {
+                    showError('tech_file', 'Недопустимый тип файла');
+                    isValid = false;
+                }
+                if (file.size > maxSize) {
+                    showError('tech_file', 'Файл слишком большой (макс. 10 МБ)');
+                    isValid = false;
+                }
+            }
+
+            return isValid;
+        }
+
+        /**
+         * Показать сообщение об ошибке
+         */
+        function showError(fieldId, message) {
+            const input = document.getElementById(fieldId);
+            const error = document.getElementById('error-' + fieldId);
+            if (input) input.classList.add('input-error');
+            if (error) {
+                error.textContent = message;
+                error.classList.add('visible');
+            }
+        }
+
+        /**
+         * Очистить все ошибки
+         */
+        function clearErrors() {
+            document.querySelectorAll('.error-message').forEach(el => {
+                el.textContent = '';
+                el.classList.remove('visible');
+            });
+            document.querySelectorAll('.input-error').forEach(el => {
+                el.classList.remove('input-error');
+            });
+        }
+
+        /**
+         * Заполнение сводки на шаге подтверждения
+         */
+        function fillSummary() {
+            const summary = document.getElementById('summary');
+            summary.innerHTML = `
+                <p><strong>Название:</strong> ${escapeHtml(document.getElementById('project_name').value)}</p>
+                <p><strong>Бюджет:</strong> ${escapeHtml(document.getElementById('budget').value)} руб.</p>
+                <p><strong>Описание:</strong> ${escapeHtml(document.getElementById('description').value.substring(0, 200))}...</p>
+                <p><strong>Файл ТЗ:</strong> ${document.getElementById('tech_file').files[0]?.name || 'Не прикреплён'}</p>
+            `;
+        }
+
+        /**
+         * Экранирование HTML для безопасности
+         */
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        /**
+         * Отправка формы
+         */
+        document.getElementById('applicationForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            // Финальная валидация всех шагов
+            if (!validateStep1() || !validateStep2()) {
+                showStep(1);
+                alert('Пожалуйста, исправьте ошибки в форме');
+                return;
+            }
+
+            const formData = new FormData(this);
+
+            try {
+                const response = await fetch('api/create_application.php', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    alert('Заявка успешно создана!');
+                    window.location.href = 'my_applications.php';
+                } else {
+                    alert('Ошибка: ' + result.message);
+                }
+            } catch (error) {
+                console.error('Ошибка отправки:', error);
+                alert('Произошла ошибка при отправке заявки');
+            }
+        });
+    </script>
+</body>
+</html>
