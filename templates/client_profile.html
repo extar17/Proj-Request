@@ -1,0 +1,1252 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Мой профиль — ProjRequest</title>
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inria+Sans:wght@400;700&family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* ===== Безопасность: защита от XSS ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* Content Security Policy через meta-тег */
+        meta[http-equiv="Content-Security-Policy"] {
+            content: "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'";
+        }
+
+        body {
+            font-family: 'Inter', 'Inria Sans', sans-serif;
+            background: white;
+            color: #1F2937;
+            line-height: 1.6;
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        /* ===== Навигация ===== */
+        .navbar {
+            display: flex;
+            align-items: center;
+            padding: 10px 80px;
+            background: white;
+            border-bottom: 1px solid #E5E7EB;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo-link {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            object-fit: contain;
+        }
+
+        .logo-text {
+            font-family: 'Inria Sans', sans-serif;
+            font-size: 28px;
+            color: #1F2937;
+        }
+
+        .logo-text .pipe {
+            color: #007ED2;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 5px;
+            margin-left: auto;
+            align-items: center;
+        }
+
+        .nav-link {
+            font-family: 'Inria Sans', sans-serif;
+            font-size: 16px;
+            color: #1F2937;
+            padding: 8px 16px;
+            border-radius: 4px;
+            transition: background 0.3s ease;
+            cursor: pointer;
+            background: none;
+            border: none;
+        }
+
+        .nav-link:hover {
+            background: rgba(0,126,210,0.08);
+        }
+
+        .nav-link.active {
+            color: #007ED2;
+            font-weight: 700;
+        }
+
+        .nav-link.logout {
+            color: #DC2626;
+        }
+
+        .nav-link.logout:hover {
+            background: rgba(220,38,38,0.08);
+        }
+
+        /* ===== Профиль ===== */
+        .profile-container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0 80px 60px 80px;
+        }
+
+        /* Шапка профиля */
+        .profile-header {
+            padding: 40px 0 32px 0;
+            border-bottom: 1px solid #E5E7EB;
+            display: flex;
+            align-items: flex-start;
+            gap: 32px;
+            flex-wrap: wrap;
+        }
+
+        .avatar {
+            width: 120px;
+            height: 120px;
+            background: #007ED2;
+            border-radius: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 52px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.10);
+            flex-shrink: 0;
+        }
+
+        .user-info {
+            flex: 1;
+            min-width: 250px;
+        }
+
+        .user-name {
+            font-size: 32px;
+            font-weight: 700;
+            color: #1F2937;
+            margin-bottom: 4px;
+        }
+
+        .user-meta {
+            font-size: 18px;
+            color: #757575;
+            margin-bottom: 8px;
+        }
+
+        .contact-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 4px;
+        }
+
+        .chip {
+            padding: 7px 14px;
+            background: #E8F0FE;
+            border-radius: 20px;
+            font-size: 14px;
+            color: #007ED2;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            margin-top: 4px;
+        }
+
+        .btn-outline {
+            padding: 10px 24px;
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #007ED2;
+            color: #007ED2;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .btn-outline:hover {
+            background: rgba(0,126,210,0.05);
+        }
+
+        .btn-outline.danger {
+            border-color: #DC2626;
+            color: #DC2626;
+        }
+
+        .btn-outline.danger:hover {
+            background: rgba(220,38,38,0.05);
+        }
+
+        /* ===== Табы ===== */
+        .tabs {
+            display: flex;
+            gap: 32px;
+            border-bottom: 2px solid #E5E7EB;
+            margin-top: 0;
+        }
+
+        .tab {
+            padding: 14px 0 16px 0;
+            font-size: 18px;
+            color: #757575;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.3s ease;
+            background: none;
+            border-top: none;
+            border-left: none;
+            border-right: none;
+            font-family: 'Inria Sans', sans-serif;
+        }
+
+        .tab.active {
+            color: #007ED2;
+            border-bottom-color: #007ED2;
+        }
+
+        .tab:hover:not(.active) {
+            color: #1F2937;
+        }
+
+        .tab-content {
+            display: none;
+            padding-top: 32px;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* ===== Заявки ===== */
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .section-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1F2937;
+        }
+
+        .filters {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .filters select,
+        .filters input {
+            padding: 8px 16px;
+            border-radius: 8px;
+            border: 1px solid #E5E7EB;
+            font-size: 13px;
+            font-family: 'Inter', sans-serif;
+            background: white;
+            outline: none;
+            transition: border-color 0.3s ease;
+        }
+
+        .filters select:focus,
+        .filters input:focus {
+            border-color: #007ED2;
+        }
+
+        .btn-primary {
+            padding: 9px 20px;
+            background: #007ED2;
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .btn-primary:hover {
+            background: #005a99;
+            box-shadow: 0 4px 12px rgba(0,126,210,0.3);
+        }
+
+        /* ===== Карточка заявки ===== */
+        .application-card {
+            background: white;
+            border-radius: 16px;
+            border: 1px solid #E5E7EB;
+            padding: 25px;
+            margin-bottom: 24px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .application-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.06);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 400;
+        }
+
+        .status-badge.pending {
+            background: #FEF3C7;
+            color: #D97706;
+        }
+
+        .status-badge.approved {
+            background: #D1FAE5;
+            color: #059669;
+        }
+
+        .status-badge.revision {
+            background: #FEF3C7;
+            color: #D97706;
+        }
+
+        .status-badge.completed {
+            background: #E5E7EB;
+            color: #757575;
+        }
+
+        .status-badge.rejected {
+            background: #FEE2E2;
+            color: #DC2626;
+        }
+
+        .status-badge.draft {
+            background: #E5E7EB;
+            color: #757575;
+        }
+
+        .card-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #1F2937;
+            margin: 4px 0 2px 0;
+        }
+
+        .card-meta {
+            font-size: 14px;
+            color: #757575;
+        }
+
+        .card-right {
+            text-align: right;
+            min-width: 120px;
+        }
+
+        .card-right .meta-label {
+            font-size: 14px;
+            color: #007ED2;
+        }
+
+        .card-description {
+            padding: 16px;
+            background: #F9FAFB;
+            border-radius: 12px;
+            margin: 12px 0;
+            font-size: 14px;
+            color: #374151;
+        }
+
+        .card-description strong {
+            font-weight: 700;
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        .tag {
+            padding: 6px 13px;
+            background: white;
+            border-radius: 16px;
+            border: 1px solid #E5E7EB;
+            font-size: 13px;
+            color: #1F2937;
+        }
+
+        .card-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .btn-secondary {
+            padding: 8px 20px;
+            border-radius: 8px;
+            border: 1px solid #E5E7EB;
+            background: white;
+            color: #757575;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .btn-secondary:hover {
+            background: #F9FAFB;
+        }
+
+        .btn-warning {
+            padding: 8px 20px;
+            border-radius: 8px;
+            border: none;
+            background: #FEF3C7;
+            color: #D97706;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .btn-warning:hover {
+            background: #FDE68A;
+        }
+
+        .progress-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .progress-bar {
+            flex: 1;
+            height: 8px;
+            background: #E5E7EB;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: #059669;
+            border-radius: 8px;
+            transition: width 0.5s ease;
+        }
+
+        .progress-label {
+            font-size: 14px;
+            color: #059669;
+            min-width: 40px;
+        }
+
+        .warning-block {
+            padding: 16px 20px;
+            background: #FEF3C7;
+            border-radius: 12px;
+            border-left: 4px solid #D97706;
+            margin: 12px 0;
+            font-size: 14px;
+            color: #92400E;
+        }
+
+        .warning-block strong {
+            font-weight: 700;
+        }
+
+        .load-more {
+            text-align: center;
+            padding-top: 8px;
+        }
+
+        .load-more button {
+            padding: 12px 32px;
+            border-radius: 8px;
+            border: 1px solid #007ED2;
+            background: white;
+            color: #007ED2;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .load-more button:hover {
+            background: rgba(0,126,210,0.05);
+        }
+
+        /* ===== Футер ===== */
+        .footer {
+            border-top: 1px solid #DEE2E6;
+            padding: 24px 20px;
+            max-width: 1320px;
+            margin: 0 auto;
+            text-align: center;
+            font-size: 14px;
+            color: #6C757D;
+        }
+
+        /* ===== Адаптив ===== */
+        @media (max-width: 1024px) {
+            .navbar {
+                padding: 10px 20px;
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+
+            .nav-links {
+                margin-left: 0;
+                width: 100%;
+                justify-content: center;
+                flex-wrap: wrap;
+            }
+
+            .profile-container {
+                padding: 0 20px 40px 20px;
+            }
+
+            .profile-header {
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+            }
+
+            .user-info {
+                text-align: center;
+            }
+
+            .contact-chips {
+                justify-content: center;
+            }
+
+            .action-buttons {
+                justify-content: center;
+                width: 100%;
+            }
+
+            .tabs {
+                gap: 16px;
+                overflow-x: auto;
+                flex-wrap: nowrap;
+            }
+
+            .tab {
+                font-size: 15px;
+                white-space: nowrap;
+            }
+
+            .section-header {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .filters {
+                flex-direction: column;
+            }
+
+            .filters select,
+            .filters input,
+            .filters .btn-primary {
+                width: 100%;
+            }
+
+            .card-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .card-right {
+                text-align: left;
+                width: 100%;
+            }
+
+            .card-actions {
+                flex-direction: column;
+                width: 100%;
+            }
+
+            .card-actions button {
+                width: 100%;
+                text-align: center;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .user-name {
+                font-size: 24px;
+            }
+
+            .avatar {
+                width: 80px;
+                height: 80px;
+                font-size: 36px;
+            }
+
+            .chip {
+                font-size: 12px;
+                padding: 5px 10px;
+            }
+
+            .card-title {
+                font-size: 17px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ===== Навигация ===== -->
+    <nav class="navbar">
+        <a href="../index.html" class="logo-link">
+            <img src="../assets/images/logo-icon.png" alt="Logo" class="logo-icon">
+            <span class="logo-text">Proj<span class="pipe">|</span>Request</span>
+        </a>
+        <div class="nav-links">
+            <a href="../index.html#about" class="nav-link">О сервисе</a>
+            <a href="../index.html#how-it-works" class="nav-link">Как это работает</a>
+            <a href="#" class="nav-link active">Мой профиль</a>
+            <button class="nav-link logout" onclick="logout()">Выйти</button>
+        </div>
+    </nav>
+
+    <!-- ===== Профиль ===== -->
+    <div class="profile-container">
+
+        <!-- Шапка профиля -->
+        <div class="profile-header" id="profileHeader">
+            <div class="avatar" id="userAvatar">👤</div>
+            <div class="user-info">
+                <div class="user-name" id="userName">Загрузка...</div>
+                <div class="user-meta" id="userMeta">Организация • Зарегистрирован: загрузка...</div>
+                <div class="contact-chips" id="contactChips">
+                    <span class="chip">📧 загрузка...</span>
+                    <span class="chip">📞 загрузка...</span>
+                </div>
+            </div>
+            <div class="action-buttons">
+                <button class="btn-outline" onclick="editProfile()">✏️ Редактировать профиль</button>
+                <button class="btn-outline danger" onclick="logout()">Выйти</button>
+            </div>
+        </div>
+
+        <!-- Табы -->
+        <div class="tabs" id="tabs">
+            <button class="tab active" data-tab="applications">📋 Мои заявки</button>
+            <button class="tab" data-tab="chats">💬 Активные чаты</button>
+            <button class="tab" data-tab="settings">⚙️ Настройки</button>
+        </div>
+
+        <!-- ===== Вкладка: Мои заявки ===== -->
+        <div class="tab-content active" id="tab-applications">
+            <div class="section-header">
+                <h2 class="section-title">Мои заявки</h2>
+                <div class="filters">
+                    <select id="statusFilter">
+                        <option value="">Все статусы</option>
+                        <option value="pending">⏳ На модерации</option>
+                        <option value="approved">✅ Принята в работу</option>
+                        <option value="revision">⚠️ Требует уточнения</option>
+                        <option value="completed">✓ Завершена</option>
+                        <option value="rejected">✖ Отклонена</option>
+                        <option value="draft">📄 Черновик</option>
+                    </select>
+                    <input type="text" id="searchInput" placeholder="🔍 Поиск по названию..." oninput="filterApplications()">
+                    <button class="btn-primary" onclick="createApplication()">➕ Новая заявка</button>
+                </div>
+            </div>
+
+            <div id="applicationsContainer">
+                <!-- Заявки загружаются через JavaScript -->
+                <div style="text-align: center; padding: 40px; color: #757575;">Загрузка заявок...</div>
+            </div>
+
+            <div class="load-more">
+                <button id="loadMoreBtn" onclick="loadMoreApplications()">Показать еще заявки</button>
+            </div>
+        </div>
+
+        <!-- ===== Вкладка: Активные чаты ===== -->
+        <div class="tab-content" id="tab-chats">
+            <div style="text-align: center; padding: 60px 20px; color: #757575;">
+                <div style="font-size: 48px; margin-bottom: 16px;">💬</div>
+                <h3 style="font-size: 20px; font-weight: 700; color: #1F2937; margin-bottom: 8px;">Активные чаты</h3>
+                <p>Здесь будут отображаться ваши активные чаты с исполнителями.</p>
+                <p style="font-size: 14px; margin-top: 8px;">Функция в разработке.</p>
+            </div>
+        </div>
+
+        <!-- ===== Вкладка: Настройки ===== -->
+        <div class="tab-content" id="tab-settings">
+            <div style="max-width: 600px; margin: 0 auto;">
+                <h3 style="font-size: 20px; font-weight: 700; color: #1F2937; margin-bottom: 24px;">⚙️ Настройки профиля</h3>
+
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; font-weight: 500; margin-bottom: 6px;">Имя пользователя</label>
+                    <input type="text" id="settingsName" style="width: 100%; padding: 12px 16px; border: 1px solid #E5E7EB; border-radius: 8px; font-size: 16px; font-family: 'Inter', sans-serif;">
+                </div>
+
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; font-weight: 500; margin-bottom: 6px;">Email</label>
+                    <input type="email" id="settingsEmail" style="width: 100%; padding: 12px 16px; border: 1px solid #E5E7EB; border-radius: 8px; font-size: 16px; font-family: 'Inter', sans-serif;">
+                </div>
+
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; font-weight: 500; margin-bottom: 6px;">Телефон</label>
+                    <input type="tel" id="settingsPhone" style="width: 100%; padding: 12px 16px; border: 1px solid #E5E7EB; border-radius: 8px; font-size: 16px; font-family: 'Inter', sans-serif;">
+                </div>
+
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; font-weight: 500; margin-bottom: 6px;">Организация</label>
+                    <input type="text" id="settingsOrg" style="width: 100%; padding: 12px 16px; border: 1px solid #E5E7EB; border-radius: 8px; font-size: 16px; font-family: 'Inter', sans-serif;">
+                </div>
+
+                <button class="btn-primary" onclick="saveSettings()" style="width: 100%; padding: 14px;">💾 Сохранить изменения</button>
+
+                <hr style="margin: 32px 0; border: none; border-top: 1px solid #E5E7EB;">
+
+                <div style="background: #FEF2F2; padding: 20px; border-radius: 12px; border-left: 4px solid #DC2626;">
+                    <h4 style="color: #991B1B; margin-bottom: 8px;">⚠️ Опасная зона</h4>
+                    <p style="color: #991B1B; font-size: 14px; margin-bottom: 12px;">Удаление аккаунта приведёт к безвозвратной потере всех данных.</p>
+                    <button onclick="deleteAccount()" style="padding: 10px 24px; background: #DC2626; color: white; border: none; border-radius: 8px; cursor: pointer; font-family: 'Inter', sans-serif; font-weight: 500;">🗑️ Удалить аккаунт</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ===== Футер ===== -->
+    <footer class="footer">
+        <p>© 2026 Новгородский государственный университет. Все права защищены.</p>
+    </footer>
+
+    <!-- ================================================================ -->
+    <!-- JavaScript: Безопасная загрузка данных                            -->
+    <!-- ================================================================ -->
+    <script>
+        // ================================================================
+        // БЕЗОПАСНОСТЬ: Защита от XSS через экранирование
+        // ================================================================
+
+        /**
+         * Экранирование HTML-сущностей для защиты от XSS
+         */
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        /**
+         * Безопасный вывод данных из API
+         */
+        function safeText(text) {
+            return escapeHtml(String(text));
+        }
+
+        // ================================================================
+        // СОСТОЯНИЕ
+        // ================================================================
+
+        let currentUser = null;
+        let applications = [];
+        let currentPage = 0;
+        const pageSize = 3;
+
+        // ================================================================
+        // ЗАГРУЗКА ДАННЫХ ПОЛЬЗОВАТЕЛЯ
+        // ================================================================
+
+        async function loadUserProfile() {
+            try {
+                const response = await fetch('../api/profile.php');
+                if (!response.ok) throw new Error('Ошибка загрузки профиля');
+
+                const data = await response.json();
+
+                if (!data.success) {
+                    // Если не авторизован — перенаправляем на главную
+                    if (data.redirect) {
+                        window.location.href = '../index.html';
+                        return;
+                    }
+                    throw new Error(data.message || 'Неизвестная ошибка');
+                }
+
+                currentUser = data.user;
+                renderUserProfile(data.user);
+                loadApplications();
+
+            } catch (error) {
+                console.error('Ошибка загрузки профиля:', error);
+                // Перенаправляем на главную при ошибке
+                window.location.href = '../index.html';
+            }
+        }
+
+        function renderUserProfile(user) {
+            // Имя
+            document.getElementById('userName').textContent = safeText(user.full_name);
+
+            // Мета-информация
+            const registeredDate = user.registered_at ? new Date(user.registered_at).toLocaleDateString('ru-RU', {
+                month: 'long',
+                year: 'numeric'
+            }) : 'неизвестно';
+            document.getElementById('userMeta').textContent =
+                `${safeText(user.organization || 'Не указана')} • Зарегистрирован: ${safeText(registeredDate)}`;
+
+            // Контакты
+            document.getElementById('contactChips').innerHTML = `
+                <span class="chip">📧 ${safeText(user.login)}</span>
+                <span class="chip">📞 ${safeText(user.phone || 'Не указан')}</span>
+            `;
+
+            // Настройки
+            document.getElementById('settingsName').value = safeText(user.full_name);
+            document.getElementById('settingsEmail').value = safeText(user.login);
+            document.getElementById('settingsPhone').value = safeText(user.phone || '');
+            document.getElementById('settingsOrg').value = safeText(user.organization || '');
+
+            // Аватар (инициалы)
+            const initials = user.full_name
+                .split(' ')
+                .map(w => w.charAt(0))
+                .join('')
+                .toUpperCase()
+                .slice(0, 2);
+
+            document.getElementById('userAvatar').textContent = initials || '👤';
+        }
+
+        // ================================================================
+        // ЗАГРУЗКА ЗАЯВОК
+        // ================================================================
+
+        async function loadApplications(reset = true) {
+            if (reset) {
+                currentPage = 0;
+                applications = [];
+            }
+
+            const status = document.getElementById('statusFilter').value;
+            const search = document.getElementById('searchInput').value.trim();
+
+            try {
+                const params = new URLSearchParams({
+                    page: currentPage,
+                    limit: pageSize,
+                    status: status,
+                    search: search
+                });
+
+                const response = await fetch(`../api/applications.php?${params}`);
+                if (!response.ok) throw new Error('Ошибка загрузки заявок');
+
+                const data = await response.json();
+
+                if (!data.success) {
+                    throw new Error(data.message || 'Ошибка загрузки');
+                }
+
+                if (reset) {
+                    applications = data.applications || [];
+                } else {
+                    applications = applications.concat(data.applications || []);
+                }
+
+                renderApplications();
+
+                // Показываем/скрываем кнопку "Показать еще"
+                const hasMore = data.has_more || false;
+                document.getElementById('loadMoreBtn').style.display = hasMore ? 'inline-block' : 'none';
+
+            } catch (error) {
+                console.error('Ошибка загрузки заявок:', error);
+                document.getElementById('applicationsContainer').innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: #DC2626;">
+                        ⚠️ Ошибка загрузки заявок. Пожалуйста, обновите страницу.
+                    </div>
+                `;
+            }
+        }
+
+        function renderApplications() {
+            const container = document.getElementById('applicationsContainer');
+
+            if (applications.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 60px 20px; color: #757575;">
+                        <div style="font-size: 48px; margin-bottom: 16px;">📋</div>
+                        <h3 style="font-size: 20px; font-weight: 700; color: #1F2937; margin-bottom: 8px;">У вас пока нет заявок</h3>
+                        <p>Создайте свою первую заявку, нажав кнопку «Новая заявка»</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '';
+            for (const app of applications) {
+                html += renderApplicationCard(app);
+            }
+
+            container.innerHTML = html;
+        }
+
+        function renderApplicationCard(app) {
+            const statusMap = {
+                'pending': { label: '⏳ На модерации', class: 'pending' },
+                'approved': { label: '✅ Принята в работу', class: 'approved' },
+                'revision': { label: '⚠️ Требует уточнения', class: 'revision' },
+                'completed': { label: '✓ Завершена', class: 'completed' },
+                'rejected': { label: '✖ Отклонена', class: 'rejected' },
+                'draft': { label: '📄 Черновик', class: 'draft' },
+            };
+
+            const status = statusMap[app.status] || { label: app.status, class: '' };
+            const createdDate = app.created_at ? new Date(app.created_at).toLocaleDateString('ru-RU') : 'неизвестно';
+
+            // Безопасное экранирование всех полей
+            const safeTitle = safeText(app.project_name);
+            const safeDescription = safeText(app.description || '');
+            const safeExecutor = safeText(app.executor || '');
+            const safeDeadline = safeText(app.deadline || '');
+            const safeNumber = safeText(app.application_number || `PR-${app.id}`);
+
+            let tagsHtml = '';
+            if (app.tags && app.tags.length > 0) {
+                tagsHtml = app.tags.map(tag => `<span class="tag">${safeText(tag)}</span>`).join('');
+            }
+
+            let warningHtml = '';
+            if (app.status === 'revision' && app.moderator_comment) {
+                warningHtml = `
+                    <div class="warning-block">
+                        <strong>❗ Комментарий модератора:</strong> ${safeText(app.moderator_comment)}
+                    </div>
+                `;
+            }
+
+            let progressHtml = '';
+            if (app.status === 'approved' && app.progress !== undefined) {
+                const progress = Math.min(Math.max(app.progress, 0), 100);
+                progressHtml = `
+                    <div class="progress-container">
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: ${progress}%;"></div>
+                        </div>
+                        <span class="progress-label">${progress}%</span>
+                    </div>
+                `;
+            }
+
+            let actionsHtml = '';
+            if (app.status === 'pending') {
+                actionsHtml = `
+                    <button class="btn-secondary" onclick="viewApplication(${app.id})">📄 Просмотреть ТЗ</button>
+                    <button class="btn-warning" onclick="editApplication(${app.id})">✏️ Редактировать</button>
+                `;
+            } else if (app.status === 'approved') {
+                actionsHtml = `
+                    <button class="btn-primary" onclick="openChat(${app.id})">💬 Перейти в чат с исполнителем</button>
+                    <button class="btn-secondary" onclick="viewApplication(${app.id})">📊 Промежуточный отчет</button>
+                `;
+            } else if (app.status === 'revision') {
+                actionsHtml = `
+                    <button class="btn-primary" onclick="editApplication(${app.id})">✏️ Внести уточнения</button>
+                    <button class="btn-secondary" onclick="viewApplication(${app.id})">📄 Просмотреть ТЗ</button>
+                `;
+            } else if (app.status === 'completed') {
+                actionsHtml = `
+                    <button class="btn-secondary" onclick="downloadReport(${app.id})">📄 Скачать отчет</button>
+                    <button class="btn-secondary" onclick="leaveReview(${app.id})">⭐ Оставить отзыв</button>
+                `;
+            } else {
+                actionsHtml = `
+                    <button class="btn-secondary" onclick="viewApplication(${app.id})">📄 Просмотреть ТЗ</button>
+                `;
+            }
+
+            return `
+                <div class="application-card" data-id="${app.id}">
+                    <div class="card-header">
+                        <div>
+                            <span class="status-badge ${status.class}">${status.label}</span>
+                            <h3 class="card-title">${safeTitle}</h3>
+                            <div class="card-meta">Заявка № ${safeNumber} • Создана: ${safeText(createdDate)}</div>
+                        </div>
+                        <div class="card-right">
+                            ${app.deadline ? `<div class="meta-label">📅 Срок: ${safeText(app.deadline)}</div>` : ''}
+                            ${app.executor ? `<div style="font-size: 13px; color: #007ED2; margin-top: 4px;">👨‍🔬 ${safeExecutor}</div>` : ''}
+                        </div>
+                    </div>
+
+                    ${app.description ? `
+                        <div class="card-description">
+                            <strong>📝 Краткое описание:</strong> ${safeDescription}
+                        </div>
+                    ` : ''}
+
+                    ${warningHtml}
+
+                    ${tagsHtml ? `<div class="tags">${tagsHtml}</div>` : ''}
+
+                    ${progressHtml}
+
+                    <div class="card-actions">
+                        ${actionsHtml}
+                    </div>
+                </div>
+            `;
+        }
+
+        // =========================================================
+        // ФИЛЬТРАЦИЯ И ЗАГРУЗКА ЕЩЁ
+        // ================================================================
+
+        function filterApplications() {
+            loadApplications(true);
+        }
+
+        function loadMoreApplications() {
+            currentPage++;
+            loadApplications(false);
+        }
+
+        // ================================================================
+        // ДЕЙСТВИЯ С ЗАЯВКАМИ
+        // ================================================================
+
+        function viewApplication(id) {
+            // Открываем модальное окно с деталями заявки
+            window.location.href = `application_detail.html?id=${id}`;
+        }
+
+        function editApplication(id) {
+            window.location.href = `application_form.html?id=${id}`;
+        }
+
+        function createApplication() {
+            window.location.href = 'application_form.html';
+        }
+
+        function openChat(id) {
+            window.location.href = `chat.html?application_id=${id}`;
+        }
+
+        function downloadReport(id) {
+            alert('Функция скачивания отчёта в разработке');
+        }
+
+        function leaveReview(id) {
+            const rating = prompt('Оцените работу от 1 до 5:');
+            if (rating === null) return;
+            
+            const numRating = parseFloat(rating);
+            if (isNaN(numRating) || numRating < 1 || numRating > 5) {
+                alert('Пожалуйста, введите число от 1 до 5');
+                return;
+            }
+
+            const review = prompt('Оставьте отзыв о работе:');
+            if (review === null) return;
+
+            // Отправляем отзыв на сервер
+            submitReview(id, numRating, review.trim());
+        }
+
+        async function submitReview(id, rating, review) {
+            try {
+                const formData = new FormData();
+                formData.append('id', id);
+                formData.append('rating', rating);
+                formData.append('review', review);
+
+                const response = await fetch('../api/submit_review.php', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    alert('Спасибо за отзыв!');
+                    loadApplications(true);
+                } else {
+                    alert('Ошибка: ' + result.message);
+                }
+            } catch (error) {
+                console.error('Ошибка:', error);
+                alert('Произошла ошибка при отправке отзыва');
+            }
+        }
+
+        // ================================================================
+        // НАСТРОЙКИ ПРОФИЛЯ
+        // ================================================================
+
+        function editProfile() {
+            // Переключаемся на вкладку настроек
+            switchTab('settings');
+        }
+
+        async function saveSettings() {
+            const fullName = document.getElementById('settingsName').value.trim();
+            const email = document.getElementById('settingsEmail').value.trim();
+            const phone = document.getElementById('settingsPhone').value.trim();
+            const organization = document.getElementById('settingsOrg').value.trim();
+
+            // Простая валидация
+            if (!fullName) {
+                alert('Введите ФИО');
+                return;
+            }
+            if (!email || !email.includes('@')) {
+                alert('Введите корректный email');
+                return;
+            }
+
+            try {
+                const formData = new FormData();
+                formData.append('full_name', fullName);
+                formData.append('email', email);
+                formData.append('phone', phone);
+                formData.append('organization', organization);
+
+                const response = await fetch('../api/update_profile.php', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    alert('Профиль успешно обновлён!');
+                    // Обновляем отображение
+                    currentUser = result.user;
+                    renderUserProfile(result.user);
+                } else {
+                    alert('Ошибка: ' + result.message);
+                }
+            } catch (error) {
+                console.error('Ошибка:', error);
+                alert('Произошла ошибка при сохранении');
+            }
+        }
+
+        async function deleteAccount() {
+            if (!confirm('Вы уверены, что хотите удалить аккаунт? Это действие необратимо!')) {
+                return;
+            }
+
+            if (!confirm('Все ваши заявки и данные будут безвозвратно удалены. Продолжить?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch('../api/delete_account.php', {
+                    method: 'POST'
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    alert('Аккаунт удалён');
+                    window.location.href = '../index.html';
+                } else {
+                    alert('Ошибка: ' + result.message);
+                }
+            } catch (error) {
+                console.error('Ошибка:', error);
+                alert('Произошла ошибка при удалении аккаунта');
+            }
+        }
+
+        // ================================================================
+        // ПЕРЕКЛЮЧЕНИЕ ВКЛАДОК
+        // ================================================================
+
+        // Навешиваем обработчики на табы
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                const tabName = this.dataset.tab;
+                switchTab(tabName);
+            });
+        });
+
+        function switchTab(tabName) {
+            // Обновляем активные табы
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelector(`.tab[data-tab="${tabName}"]`)?.classList.add('active');
+
+            // Обновляем содержимое
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            document.getElementById(`tab-${tabName}`)?.classList.add('active');
+        }
+
+        // ================================================================
+        // ВЫХОД
+        // ================================================================
+
+        async function logout() {
+            if (!confirm('Вы уверены, что хотите выйти?')) return;
+
+            try {
+                const response = await fetch('../api/logout.php');
+                const result = await response.json();
+                if (result.success) {
+                    window.location.href = '../index.html';
+                }
+            } catch (error) {
+                console.error('Ошибка выхода:', error);
+                window.location.href = '../index.html';
+            }
+        }
+
+        // ================================================================
+        // ИНИЦИАЛИЗАЦИЯ
+        // ================================================================
+
+        document.addEventListener('DOMContentLoaded', function() {
+            loadUserProfile();
+        });
+    </script>
+</body>
+</html>

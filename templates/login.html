@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Вход / Регистрация — ProjRequest | НовГУ</title>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inria+Sans:wght@400;700&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto', 'Inria Sans', sans-serif;
+            background: #f5f5f5;
+            color: #1F2937;
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        /* ===== Шапка ===== */
+        .header {
+            background: #1a365d;
+            padding: 15px 40px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+
+        .header-logo {
+            font-family: 'Inria Sans', sans-serif;
+            font-size: 28px;
+            color: white;
+            text-decoration: none;
+        }
+
+        .header-logo .pipe {
+            font-weight: 700;
+        }
+
+        .header-nav {
+            margin-left: auto;
+            display: flex;
+            gap: 10px;
+        }
+
+        .header-btn {
+            padding: 10px 24px;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+            font-family: 'Roboto', sans-serif;
+            transition: all 0.3s ease;
+        }
+
+        .btn-login {
+            background: transparent;
+            color: white;
+            border: 1px solid rgba(255,255,255,0.5);
+        }
+
+        .btn-login:hover {
+            background: rgba(255,255,255,0.1);
+        }
+
+        .btn-register {
+            background: #007ED2;
+            color: white;
+        }
+
+        .btn-register:hover {
+            background: #005a99;
+        }
+
+        /* ===== Контент страницы ===== */
+        .page-content {
+            max-width: 800px;
+            margin: 80px auto;
+            text-align: center;
+            padding: 0 20px;
+        }
+
+        .page-content h1 {
+            font-size: 36px;
+            color: #1F2937;
+            margin-bottom: 16px;
+        }
+
+        .page-content p {
+            font-size: 18px;
+            color: #6C757D;
+            margin-bottom: 32px;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            padding: 14px 40px;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+            font-family: 'Roboto', sans-serif;
+            transition: all 0.3s ease;
+        }
+
+        .action-btn-primary {
+            background: #007ED2;
+            color: white;
+        }
+
+        .action-btn-primary:hover {
+            background: #005a99;
+            box-shadow: 0 4px 12px rgba(0,126,210,0.3);
+        }
+
+        .action-btn-secondary {
+            background: white;
+            color: #007ED2;
+            border: 2px solid #007ED2;
+        }
+
+        .action-btn-secondary:hover {
+            background: rgba(0,126,210,0.05);
+        }
+
+        /* ===== Модальное окно (оверлей) ===== */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            /* Плавное появление */
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* ===== Модальное окно (контейнер) ===== */
+        .modal {
+            background: white;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 480px;
+            padding: 40px 36px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            position: relative;
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from { 
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to { 
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Кнопка закрытия */
+        .modal-close {
+            position: absolute;
+            top: 16px;
+            right: 20px;
+            width: 32px;
+            height: 32px;
+            border: none;
+            background: #f0f0f0;
+            border-radius: 50%;
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #666;
+            transition: all 0.2s ease;
+        }
+
+        .modal-close:hover {
+            background: #e0e0e0;
+            color: #333;
+        }
+
+        /* Заголовок модального окна */
+        .modal-title {
+            font-family: 'Inria Sans', sans-serif;
+            font-size: 28px;
+            color: #1F2937;
+            text-align: center;
+            margin-bottom: 8px;
+        }
+
+        .modal-subtitle {
+            font-size: 14px;
+            color: #6C757D;
+            text-align: center;
+            margin-bottom: 28px;
+        }
+
+        /* Поля формы */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 6px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid #D1D5DB;
+            border-radius: 8px;
+            font-size: 16px;
+            font-family: 'Roboto', sans-serif;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+            outline: none;
+        }
+
+        .form-group input:focus {
+            border-color: #007ED2;
+            box-shadow: 0 0 0 3px rgba(0,126,210,0.1);
+        }
+
+        .form-group input.input-error {
+            border-color: #DC2626;
+        }
+
+        .form-error {
+            color: #DC2626;
+            font-size: 13px;
+            margin-top: 4px;
+            display: none;
+        }
+
+        .form-error.visible {
+            display: block;
+        }
+
+        /* Чекбокс */
+        .form-checkbox {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            margin-bottom: 24px;
+        }
+
+        .form-checkbox input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            margin-top: 2px;
+            accent-color: #007ED2;
+            flex-shrink: 0;
+        }
+
+        .form-checkbox label {
+            font-size: 13px;
+            color: #6C757D;
+            line-height: 1.4;
+        }
+
+        .form-checkbox a {
+            color: #007ED2;
+            text-decoration: underline;
+        }
+
+        /* Кнопка отправки */
+        .submit-btn {
+            width: 100%;
+            padding: 14px;
+            background: #007ED2;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 17px;
+            font-weight: 500;
+            cursor: pointer;
+            font-family: 'Roboto', sans-serif;
+            transition: all 0.3s ease;
+        }
+
+        .submit-btn:hover {
+            background: #005a99;
+            box-shadow: 0 4px 12px rgba(0,126,210,0.3);
+        }
+
+        .submit-btn:disabled {
+            background: #9CA3AF;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        /* Переключение между окнами */
+        .modal-switch {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 14px;
+            color: #6C757D;
+        }
+
+        .modal-switch a {
+            color: #007ED2;
+            text-decoration: none;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        .modal-switch a:hover {
+            text-decoration: underline;
+        }
+
+        /* Уведомление */
+        .alert {
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            display: none;
+        }
+
+        .alert.visible {
+            display: block;
+        }
+
+        .alert-error {
+            background: #FEF2F2;
+            color: #991B1B;
+            border: 1px solid #FECACA;
+        }
+
+        .alert-success {
+            background: #F0FDF4;
+            color: #166534;
+            border: 1px solid #BBF7D0;
+        }
+
+        /* Адаптивность */
+        @media (max-width: 600px) {
+            .modal {
+                max-width: 95%;
+                padding: 30px 20px;
+                margin: 0 10px;
+            }
+
+            .header {
+                padding: 15px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ===== Шапка ===== -->
+    <header class="header">
+        <a href="../index.html" class="header-logo">Proj<span class="pipe">|</span>Request</a>
+        <nav class="header-nav">
+            <button class="header-btn btn-login" onclick="openModal('login')">Вход</button>
+            <button class="header-btn btn-register" onclick="openModal('register')">Регистрация</button>
+        </nav>
+    </header>
+
+    <!-- ===== Контент страницы ===== -->
+    <div class="page-content">
+        <h1>Добро пожаловать в ProjRequest</h1>
+        <p>Платформа для подачи и обработки проектных заявок Новгородского государственного университета</p>
+        <div class="action-buttons">
+            <button class="action-btn action-btn-primary" onclick="openModal('register')">Создать аккаунт</button>
+            <button class="action-btn action-btn-secondary" onclick="openModal('login')">Войти в систему</button>
+        </div>
+    </div>
+
+    <!-- ================================================================ -->
+    <!-- МОДАЛЬНОЕ ОКНО: ВХОД                                             -->
+    <!-- ================================================================ -->
+    <div class="modal-overlay" id="loginOverlay">
+        <div class="modal">
+            <button class="modal-close" onclick="closeModal('login')">&times;</button>
+            
+            <h2 class="modal-title">Вход в систему</h2>
+            <p class="modal-subtitle">Войдите для доступа к вашим заявкам</p>
+
+            <!-- Сообщение об ошибке -->
+            <div class="alert alert-error" id="loginAlert"></div>
+
+            <form id="loginForm" novalidate>
+                <!-- Логин -->
+                <div class="form-group">
+                    <label for="loginEmail">Email (логин)</label>
+                    <input 
+                        type="email" 
+                        id="loginEmail" 
+                        name="login" 
+                        placeholder="moderator@novsu.ru" 
+                        required
+                        autocomplete="email"
+                    >
+                    <span class="form-error" id="loginEmailError"></span>
+                </div>
+
+                <!-- Пароль -->
+                <div class="form-group">
+                    <label for="loginPassword">Пароль</label>
+                    <input 
+                        type="password" 
+                        id="loginPassword" 
+                        name="password" 
+                        placeholder="Введите пароль" 
+                        required
+                        autocomplete="current-password"
+                    >
+                    <span class="form-error" id="loginPasswordError"></span>
+                </div>
+
+                <!-- Кнопка -->
+                <button type="submit" class="submit-btn" id="loginSubmitBtn">Войти</button>
+            </form>
+
+            <!-- Переключение -->
+            <p class="modal-switch">
+                Нет аккаунта? 
+                <a onclick="switchModal('login', 'register')">Зарегистрироваться</a>
+            </p>
+        </div>
+    </div>
+
+    <!-- ================================================================ -->
+    <!-- МОДАЛЬНОЕ ОКНО: РЕГИСТРАЦИЯ                                      -->
+    <!-- ================================================================ -->
+    <div class="modal-overlay" id="registerOverlay">
+        <div class="modal">
+            <button class="modal-close" onclick="closeModal('register')">&times;</button>
+            
+            <h2 class="modal-title">Регистрация</h2>
+            <p class="modal-subtitle">Создайте аккаунт для подачи заявок</p>
+
+            <!-- Сообщение -->
+            <div class="alert alert-error" id="registerAlert"></div>
+            <div class="alert alert-success" id="registerSuccess"></div>
+
+            <form id="registerForm" novalidate>
+                <!-- ФИО -->
+                <div class="form-group">
+                    <label for="regFullName">ФИО</label>
+                    <input 
+                        type="text" 
+                        id="regFullName" 
+                        name="full_name" 
+                        placeholder="Иванов Иван Иванович" 
+                        required
+                        minlength="2"
+                        maxlength="100"
+                    >
+                    <span class="form-error" id="regFullNameError"></span>
+                </div>
+
+                <!-- Email -->
+                <div class="form-group">
+                    <label for="regEmail">Email (будет использоваться как логин)</label>
+                    <input 
+                        type="email" 
+                        id="regEmail" 
+                        name="login" 
+                        placeholder="client@test.ru" 
+                        required
+                    >
+                    <span class="form-error" id="regEmailError"></span>
+                </div>
+
+                <!-- Организация -->
+                <div class="form-group">
+                    <label for="regOrg">Организация</label>
+                    <input 
+                        type="text" 
+                        id="regOrg" 
+                        name="organization" 
+                        placeholder="ООО Технологии" 
+                        required
+                        maxlength="255"
+                    >
+                    <span class="form-error" id="regOrgError"></span>
+                </div>
+
+                <!-- Телефон -->
+                <div class="form-group">
+                    <label for="regPhone">Контактный телефон</label>
+                    <input 
+                        type="tel" 
+                        id="regPhone" 
+                        name="phone" 
+                        placeholder="+79161234567" 
+                        required
+                    >
+                    <span class="form-error" id="regPhoneError"></span>
+                </div>
+
+                <!-- Пароль -->
+                <div class="form-group">
+                    <label for="regPassword">Пароль</label>
+                    <input 
+                        type="password" 
+                        id="regPassword" 
+                        name="password" 
+                        placeholder="Минимум 8 символов" 
+                        required
+                        minlength="8"
+                        autocomplete="new-password"
+                    >
+                    <span class="form-error" id="regPasswordError"></span>
+                </div>
+
+                <!-- Подтверждение пароля -->
+                <div class="form-group">
+                    <label for="regPasswordConfirm">Подтверждение пароля</label>
+                    <input 
+                        type="password" 
+                        id="regPasswordConfirm" 
+                        name="password_confirm" 
+                        placeholder="Повторите пароль" 
+                        required
+                        autocomplete="new-password"
+                    >
+                    <span class="form-error" id="regPasswordConfirmError"></span>
+                </div>
+
+                <!-- Согласие на обработку ПДн -->
+                <div class="form-checkbox">
+                    <input type="checkbox" id="regConsent" name="consent" required>
+                    <label for="regConsent">
+                        Я даю согласие на обработку персональных данных в соответствии с 
+                        <a href="#" target="_blank">Политикой конфиденциальности</a> (152-ФЗ)
+                    </label>
+                </div>
+
+                <!-- Кнопка -->
+                <button type="submit" class="submit-btn" id="registerSubmitBtn">Зарегистрироваться</button>
+            </form>
+
+            <!-- Переключение -->
+            <p class="modal-switch">
+                Уже есть аккаунт? 
+                <a onclick="switchModal('register', 'login')">Войти</a>
+            </p>
+        </div>
+    </div>
+
+    <!-- ===== JavaScript: логика модальных окон и отправки форм ===== -->
+    <script>
+        /**
+         * Открыть модальное окно
+         * @param {string} type - 'login' или 'register'
+         */
+        function openModal(type) {
+            const overlay = document.getElementById(type + 'Overlay');
+            if (overlay) {
+                overlay.classList.add('active');
+                document.body.style.overflow = 'hidden'; // Запрет прокрутки фона
+                // Очищаем ошибки и поля
+                clearFormErrors(type);
+                if (type === 'login') {
+                    document.getElementById('loginForm').reset();
+                } else {
+                    document.getElementById('registerForm').reset();
+                }
+                hideAlert(type);
+                // Фокус на первое поле
+                setTimeout(() => {
+                    const firstInput = overlay.querySelector('input');
+                    if (firstInput) firstInput.focus();
+                }, 100);
+            }
+        }
+
+        /**
+         * Закрыть модальное окно
+         * @param {string} type - 'login' или 'register'
+         */
+        function closeModal(type) {
+            const overlay = document.getElementById(type + 'Overlay');
+            if (overlay) {
+                overlay.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+        }
+
+        /**
+         * Переключение между окнами
+         * @param {string} from - откуда
+         * @param {string} to - куда
+         */
+        function switchModal(from, to) {
+            closeModal(from);
+            setTimeout(() => openModal(to), 200);
+        }
+
+        /**
+         * Очистка ошибок формы
+         * @param {string} type - 'login' или 'register'
+         */
+        function clearFormErrors(type) {
+            const overlay = document.getElementById(type + 'Overlay');
+            if (!overlay) return;
+            
+            // Убираем классы ошибок с инпутов
+            overlay.querySelectorAll('.input-error').forEach(el => {
+                el.classList.remove('input-error');
+            });
+            // Скрываем сообщения об ошибках
+            overlay.querySelectorAll('.form-error').forEach(el => {
+                el.textContent = '';
+                el.classList.remove('visible');
+            });
+        }
+
+        /**
+         * Показать ошибку у поля
+         * @param {string} type - 'login' или 'register'
+         * @param {string} fieldId - ID поля
+         * @param {string} message - Текст ошибки
+         */
+        function showFieldError(type, fieldId, message) {
+            const overlay = document.getElementById(type + 'Overlay');
+            if (!overlay) return;
+            
+            const input = document.getElementById(fieldId);
+            const error = document.getElementById(fieldId + 'Error');
+            
+            if (input) input.classList.add('input-error');
+            if (error) {
+                error.textContent = message;
+                error.classList.add('visible');
+            }
+        }
+
+        /**
+         * Показать/скрыть общее сообщение (alert)
+         * @param {string} type - 'login' или 'register'
+         * @param {string} message - Текст сообщения
+         * @param {string} style - 'error' или 'success'
+         */
+        function showAlert(type, message, style) {
+            const alertId = type === 'login' ? 'loginAlert' : 'registerAlert';
+            const successId = 'registerSuccess';
+            
+            // Скрываем оба
+            document.getElementById('loginAlert')?.classList.remove('visible');
+            document.getElementById('registerAlert')?.classList.remove('visible');
+            document.getElementById('registerSuccess')?.classList.remove('visible');
+            
+            const alertEl = document.getElementById(style === 'success' ? successId : alertId);
+            if (alertEl) {
+                alertEl.textContent = message;
+                alertEl.className = 'alert ' + (style === 'success' ? 'alert-success' : 'alert-error') + ' visible';
+            }
+        }
+
+        function hideAlert(type) {
+            document.getElementById('loginAlert')?.classList.remove('visible');
+            document.getElementById('registerAlert')?.classList.remove('visible');
+            document.getElementById('registerSuccess')?.classList.remove('visible');
+        }
+
+        /**
+         * Валидация email
+         */
+        function isValidEmail(email) {
+            return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+        }
+
+        /**
+         * Валидация телефона
+         */
+        function isValidPhone(phone) {
+            return /^\+?[0-9]{10,15}$/.test(phone.replace(/[\s\-\(\)]/g, ''));
+        }
+
+        // ================================================================
+        // ОБРАБОТЧИК ФОРМЫ ВХОДА
+        // ================================================================
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            clearFormErrors('login');
+            hideAlert('login');
+
+            const email = document.getElementById('loginEmail').value.trim();
+            const password = document.getElementById('loginPassword').value;
+
+            let hasError = false;
+
+            // Валидация
+            if (!email) {
+                showFieldError('login', 'loginEmail', 'Введите email');
+                hasError = true;
+            } else if (!isValidEmail(email)) {
+                showFieldError('login', 'loginEmail', 'Некорректный формат email');
+                hasError = true;
+            }
+
+            if (!password) {
+                showFieldError('login', 'loginPassword', 'Введите пароль');
+                hasError = true;
+            }
+
+            if (hasError) return;
+
+            // Отправка
+            const submitBtn = document.getElementById('loginSubmitBtn');
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Вход...';
+
+            try {
+                const formData = new FormData();
+                formData.append('login', email);
+                formData.append('password', password);
+
+                const response = await fetch('../api/auth.php?action=login', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    // Перенаправление в зависимости от роли
+                    if (result.role === 'moderator' || result.role === 'admin') {
+                        window.location.href = 'moderator_panel.html';
+                    } else {
+                        window.location.href = 'application_form.html';
+                    }
+                } else {
+                    showAlert('login', result.message, 'error');
+                }
+            } catch (error) {
+                console.error('Ошибка:', error);
+                showAlert('login', 'Ошибка соединения с сервером', 'error');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Войти';
+            }
+        });
+
+        // ================================================================
+        // ОБРАБОТЧИК ФОРМЫ РЕГИСТРАЦИИ
+        // ================================================================
+        document.getElementById('registerForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            clearFormErrors('register');
+            hideAlert('register');
+
+            const fullName = document.getElementById('regFullName').value.trim();
+            const email = document.getElementById('regEmail').value.trim();
+            const organization = document.getElementById('regOrg').value.trim();
+            const phone = document.getElementById('regPhone').value.trim();
+            const password = document.getElementById('regPassword').value;
+            const passwordConfirm = document.getElementById('regPasswordConfirm').value;
+            const consent = document.getElementById('regConsent').checked;
+
+            let hasError = false;
+
+            // Валидация ФИО
+            if (!fullName) {
+                showFieldError('register', 'regFullName', 'Введите ФИО');
+                hasError = true;
+            } else if (fullName.length < 2) {
+                showFieldError('register', 'regFullName', 'ФИО должно быть не менее 2 символов');
+                hasError = true;
+            }
+
+            // Валидация Email
+            if (!email) {
+                showFieldError('register', 'regEmail', 'Введите email');
+                hasError = true;
+            } else if (!isValidEmail(email)) {
+                showFieldError('register', 'regEmail', 'Некорректный формат email');
+                hasError = true;
+            }
+
+            // Валидация организации
+            if (!organization) {
+                showFieldError('register', 'regOrg', 'Введите название организации');
+                hasError = true;
+            }
+
+            // Валидация телефона
+            if (!phone) {
+                showFieldError('register', 'regPhone', 'Введите телефон');
+                hasError = true;
+            } else if (!isValidPhone(phone)) {
+                showFieldError('register', 'regPhone', 'Некорректный формат телефона');
+                hasError = true;
+            }
+
+            // Валидация пароля
+            if (!password) {
+                showFieldError('register', 'regPassword', 'Введите пароль');
+                hasError = true;
+            } else if (password.length < 8) {
+                showFieldError('register', 'regPassword', 'Пароль должен быть не менее 8 символов');
+                hasError = true;
+            }
+
+            // Подтверждение пароля
+            if (!passwordConfirm) {
+                showFieldError('register', 'regPasswordConfirm', 'Подтвердите пароль');
+                hasError = true;
+            } else if (password !== passwordConfirm) {
+                showFieldError('register', 'regPasswordConfirm', 'Пароли не совпадают');
+                hasError = true;
+            }
+
+            // Согласие на ПДн
+            if (!consent) {
+                showAlert('register', 'Необходимо дать согласие на обработку персональных данных', 'error');
+                hasError = true;
+            }
+
+            if (hasError) return;
+
+            // Отправка
+            const submitBtn = document.getElementById('registerSubmitBtn');
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Регистрация...';
+
+            try {
+                const formData = new FormData();
+                formData.append('full_name', fullName);
+                formData.append('login', email);
+                formData.append('organization', organization);
+                formData.append('phone', phone);
+                formData.append('password', password);
+
+                const response = await fetch('../api/auth.php?action=register', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showAlert('register', 'Регистрация успешна! Сейчас вы будете перенаправлены...', 'success');
+                    // Через 2 секунды переключаем на вход
+                    setTimeout(() => {
+                        switchModal('register', 'login');
+                    }, 2000);
+                } else {
+                    showAlert('register', result.message, 'error');
+                }
+            } catch (error) {
+                console.error('Ошибка:', error);
+                showAlert('register', 'Ошибка соединения с сервером', 'error');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Зарегистрироваться';
+            }
+        });
+
+        // ================================================================
+        // ЗАКРЫТИЕ ПО КЛИКУ НА ОВЕРЛЕЙ (ВНЕ МОДАЛЬНОГО ОКНА)
+        // ================================================================
+        document.querySelectorAll('.modal-overlay').forEach(overlay => {
+            overlay.addEventListener('click', function(e) {
+                if (e.target === overlay) {
+                    const type = overlay.id.replace('Overlay', '');
+                    closeModal(type);
+                }
+            });
+        });
+
+        // ================================================================
+        // ЗАКРЫТИЕ ПО КЛАВИШЕ ESC
+        // ================================================================
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                if (document.getElementById('loginOverlay').classList.contains('active')) {
+                    closeModal('login');
+                }
+                if (document.getElementById('registerOverlay').classList.contains('active')) {
+                    closeModal('register');
+                }
+            }
+        });
+    </script>
+
+</body>
+</html>
